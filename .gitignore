@@ -1,0 +1,13 @@
+# 특정 파일 배제
+secret_key.txt
+
+# 특정 확장자 배제
+*.log
+*.tmp
+
+# 특정 폴더 배제
+/node_modules/
+/build/
+
+# 특정 폴더 안의 파일만 배제
+/config/*.env
