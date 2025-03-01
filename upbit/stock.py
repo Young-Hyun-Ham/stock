@@ -1,5 +1,6 @@
 import logging
 from logging.handlers import TimedRotatingFileHandler
+from trading_strategy import trading_strategy
 import os
 import sys
 import jwt
@@ -86,17 +87,7 @@ class UpbitTrader:
             return price
         except Exception as e:
             self.logger.error(f"가격 조회 실패: {str(e)}")
-            raise
-
-def test():
-    # 15분 봉 기준 이동평균선 전략
-    current_price = trader.get_current_price()
-    ma15 = get_ma15("KRW-BTC")
-
-    if current_price > ma15 * 1.02:
-        trader.limit_sell(...)
-    elif current_price < ma15 * 0.98:
-        trader.limit_buy(...)
+            raise    
 
     # 지정가 매수 주문
     def limit_buy(self, ticker, price, volume):
@@ -151,65 +142,37 @@ def test():
         except Exception as e:
             self.logger.error(f"매도 주문 실패: {str(e)}")
             raise
-
-# ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-# ▼▼▼ 여기에 매매 전략 구현 ▼▼▼
-def simple_trading(trader):
-    try:
-        trader.logger.debug("simple 전략 실행 시작")
-
-        btc_price = trader.get_current_price("KRW-BTC")
-        
-        # 예시: 5% 하락시 매수, 5% 상승시 매도
-        target_buy = btc_price * 0.95
-        target_sell = btc_price * 1.05
-        
-        # 보유 현금 조회 (실제 구현 필요)
-        current_krw = 100000  # 예시 금액
-        
-        if current_krw > 5000:
-            print(f"매수 시도: {target_buy}원")
-            buy_condition = trader.limit_buy("KRW-BTC", target_buy, 0.001)
-        
-        # 보유 코인 조회 (실제 구현 필요)
-        current_btc = 0.001
-        
-        if current_btc > 0:
-            print(f"매도 시도: {target_sell}원")
-            sell_condition = trader.limit_sell("KRW-BTC", target_sell, 0.001)
-        
-        # logger
-        if buy_condition:
-            trader.logger.info(f"매수 조건 충족: 가격 {target_sell}")
-            
-        if sell_condition:
-            trader.logger.warning(f"매도 조건 충족: 가격 {target_sell}")
-
-    except Exception as e:
-        trader.logger.critical(f"simple 전략 실행 중 치명적 오류: {str(e)}", exc_info=True)
-        raise
-
-def trading_strategy(trader, type):
-    match type:
-        case "simple":
-            simple_trading(trader)
-            return
-        case _:
-            return
-
-# ▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒▒
-
+    
+    # 트레이드 로그 함수
+    def trade_log(self, ticker, price, volume):
+        try:
+            self.logger.info(
+                f"ticker name - {ticker} "
+                f"가격: {price}, 수량: {volume}"
+            )
+        except Exception as e:
+            self.logger.error(f"테스트트 실패: {str(e)}")
+            raise
+    
 if __name__ == "__main__":
-    print(f"access key : {os.getenv("UPBIT_ACCESS_KEY")}")
-    print(f"secret key : {os.getenv("UPBIT_SECRET_KEY")}")
+    #print(f"access key : {os.getenv("UPBIT_ACCESS_KEY")}")
+    #print(f"secret key : {os.getenv("UPBIT_SECRET_KEY")}")
     trader = UpbitTrader()
     trader.logger.info("====== 자동 매매 프로그램 시작 ======")
-    isRun = False
+    isRun = True
 
     try:
         while isRun:
-            trading_strategy(trader, "simple")
-            time.sleep(60)  # 1분 간격 실행
+            #trading_strategy(trader, "simple")
+            #trading_strategy(trader, "moving_average")
+            #trading_strategy(trader, "rsi")
+            #trading_strategy(trader, "bollinger")
+            trading_strategy(trader, "trend_following")
+            #trading_strategy(trader, "martingale")
+            #trading_strategy(trader, "grid")
+            #trading_strategy(trader, "macd")
+            isRun = False
+            #time.sleep(60)  # 1분 간격 실행
 
     except KeyboardInterrupt:
         trader.logger.info("사용자에 의해 프로그램 종료")
